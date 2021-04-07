@@ -1,3 +1,7 @@
 *.ko
 *.o
 *.so
+*.mod.*
+*.mod
+*.cmd
+*.d
