@@ -1,9 +1,8 @@
 /**
  * xt_evil - pass evil bits.
- * Copyright (C) 2021 Robert Gray <rpg4231@rit.edu>
- * Copyright (C) 2021 Ben Cartwright-Cox <ben@benjojo.co.uk>
- * Copyright (C) 2013 Changli Gao <xiaosuo@gmail.com>
- *
+ * Copyright (C) 2021 R. P. Gray <rpg4231@rit.edu>
+ * Copyright (C) 1999 Paul `Rusty' Russell & Michael J. Neuling
+ * Copyright (C) 2000-2004 Netfilter Core Team <coreteam@netfilter.org>
  *
  * This code is *inside* the kernel and does weird kernel shit
  *
@@ -35,7 +34,7 @@
 #include <linux/slab.h>
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Robert Gray <rpg4231@rit.edu>");
+MODULE_AUTHOR("R. P. Gray <rpg4231@rit.edu>");
 MODULE_DESCRIPTION("iptables: pass evil bits");
 MODULE_ALIAS("ipt_EVIL");
 
@@ -55,24 +54,23 @@ iptable_evil_hook(void *priv, struct sk_buff *skb,
                     const struct nf_hook_state *state)
 {
 
-    // so this is where the magic happens
+    // this function is called every time we get a packet
+    // in one of the vanilla tables, this would call ipt_do_table and let that do the processing
     // skb is our packet buffer, so we look at that and return NF_ACCEPT for our funky evil bit packets
-    // or XT_CONTINUE to proceed to other tables
+
     //TODO: make sure these assumptions are correct
     //get the IP header from skb, check if bit is set
-    //IP_DF = 0x4000
-    //htons(IP_DF)=0x0040
-    //htons(IP_DF)<<1=0x0080
+
     if((ip_hdr(skb)->frag_off & 0x0040) == 0x0040) {
-//    if((ip_hdr(skb)->frag_off & 0x0080) == 0x0080) {
         pr_info("NF_ACCEPT on packet with frag_off: %x",ip_hdr(skb)->frag_off);
         return NF_ACCEPT;
     } else{
         pr_info("XT_RETURN on packet with frag_off: %x",ip_hdr(skb)->frag_off);
-        return XT_RETURN; // might need to be XT_RETURN??
+        return XT_RETURN;
     }
+
     //to set is: iph->frag_off |= htons(IP_DF)<< 1; // Set the "evil" bit
-    //return ipt_do_table(skb, state, state->net->ipv4.iptable_filter);
+
 }
 
 static struct nf_hook_ops *evil_ops __read_mostly;
@@ -98,9 +96,10 @@ static int __net_init iptable_evil_table_init(struct net *net)
     ((struct ipt_standard *)repl->entries)[1].target.verdict =
             forward ? -NF_ACCEPT - 1 : -NF_DROP - 1;
 
-    //TODO: create net->ipv4.iptable_evil
-    // edit include/net/netns/ipv4.h: netns_ipv4 struct to include iptable_evil and hope it doesn't break it
+    // to for this to work, edit include/net/netns/ipv4.h: netns_ipv4 struct 
+    // to include iptable_evil and hope it doesn't break it
     // since this modifies kernel headers, this _will_ require building in-tree
+    // or you _could_ just replace one of the other tables, but bad things would happen
     err = ipt_register_table(net, &packet_evil, repl, evil_ops,
                              &net->ipv4.iptable_evil);
     kfree(repl);

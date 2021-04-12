@@ -6,6 +6,7 @@
  *
  *		The Internet Protocol (IP) output module.
  *
+ *	*** contains evil bit output modification (C) 2015 Ben Cartwright-Cox <Ben@Benjojo.co.uk>
  * Authors:	Ross Biro
  *		Fred N. van Kempen, <waltje@uWalt.NL.Mugnet.ORG>
  *		Donald Becker, <becker@super.org>

