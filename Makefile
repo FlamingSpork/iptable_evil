@@ -1,26 +1,16 @@
-CFLAGS += -Wall -O2 $(shell pkg-config --cflags xtables) -fPIC
-LDFLAGS += $(shell pkg-config --libs xtables)
-XTLIBDIR := $(shell pkg-config --variable xtlibdir xtables)
-KDIR ?=  /lib/modules/`uname -r`/build
+# generic IP tables
+obj-m += ip_tables.o
 
-XTABLES_MODULES := $(patsubst %.c,%.so,$(wildcard libxt_*.c))
+# the individual tables
+obj-m += iptable_filter.o
+obj-m += iptable_mangle.o
+obj-m += iptable_nat.o
+obj-m += iptable_raw.o
+obj-m += iptable_security.o
+obj-m += iptable_evil.o
 
-.PHONY: all install
-
-all: ${XTABLES_MODULES}
-	$(MAKE) -C ${KDIR} M=$(shell pwd) modules
-
-lib%.so: lib%.o
-	$(CC) -o $@ -shared $< ${LDFLAGS}
-
-%.o: %.c
-	$(CC) -o $@ -c $< ${CFLAGS}
-
-install: all
-	$(MAKE) -C ${KDIR} M=$(shell pwd) modules_install
-	install -d ${XTLIBDIR}
-	install ${XTABLES_MODULES} ${XTLIBDIR}
+all:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
 clean:
-	$(MAKE) -C ${KDIR} M=$(shell pwd) clean
-	$(RM) *.o *.so
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
