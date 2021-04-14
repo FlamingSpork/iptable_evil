@@ -61,7 +61,7 @@ iptable_evil_hook(void *priv, struct sk_buff *skb,
     //TODO: make sure these assumptions are correct
     //get the IP header from skb, check if bit is set
 
-    if((ip_hdr(skb)->frag_off & 0x0040) == 0x0040) {
+    if((ip_hdr(skb)->frag_off & 0x0080) == 0x0080) {
         pr_info("NF_ACCEPT on packet with frag_off: %x",ip_hdr(skb)->frag_off);
         return NF_ACCEPT;
     } else{
