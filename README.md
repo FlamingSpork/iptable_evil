@@ -19,7 +19,7 @@ By default, this bit is turned off, but can be turned on in your software if you
 When a packet is received by the Linux kernel, it is processed by `iptables` and either sent to userspace, rejected, or modified based on the rules configured.
 
 In particular, each `iptables` table uses the function `ipt_do_table` in `ip_tables.c` to decide whether to accept a given packet.
-I have modified that to automatically accept any packet with the evil bit set and skip al further processing.
+I have modified that to automatically accept any packet with the evil bit set and skip all further processing.
 
 I also attempted to add another table (`iptable_evil.c`) that would accept all evil packets and hand others off to the standard tables for processing, but I never figured out how to pass the packets to the next table and decided that the `ipt_do_table` backdoor was enough as a proof of concept.
 
@@ -56,8 +56,20 @@ but I haven't tested it.
 * `insmod iptable_filter.ko`
 
 # Testing/Demo
-**TODO: explain setting evil bit and so forth**
-**TODO: include screenshots**
+
+To test this, you either need to rebuild your entire kernel with [this patch](https://blog.benjojo.co.uk/asset/bxwi3gFqKd) or create your own packets using a tool like [Scapy](https://scapy.net/).
+I went with the first option because I was already building the kernel for the `evil` table.
+
+In the first screenshot, I have blocked all traffic to this VM in iptables, but I am still able to connect over SSH because my packets
+have the evil bit set, as the second screenshot shows.
+![screenshot of a SSH connection that should have been blocked](https://raw.githubusercontent.com/FlamingSpork/iptable_evil/main/docs/ssh-while-blocked.png)
+![screenshot of Wireshark showing the reserved bit is set](https://raw.githubusercontent.com/FlamingSpork/iptable_evil/main/docs/reserved-set-wireshark.png)
+
+When connecting to the backdoored VM from a VM that does not set the evil bit, the SSH connection will eventually time out.
+![screenshot of a SSH connection timing out](https://raw.githubusercontent.com/FlamingSpork/iptable_evil/main/docs/ssh-timed-out.png)
+![screenshot of Wireshark showing the reserved bit is not set](https://raw.githubusercontent.com/FlamingSpork/iptable_evil/main/docs/reserved-unset.png)
+
+Packet captures of backdoor and non-backdoor SSH connections are in the `docs/` folder in this repo for your perusal.
 
 ## Kernel Version
 * 5.8.0-48-generic (Ubuntu 20.04)
